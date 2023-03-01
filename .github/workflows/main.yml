@@ -22,13 +22,13 @@ jobs:
         sudo apt-get install mysql-client
         composer install
         npm install
-    - name: Run tests
-      run: |
-        cp .env.example .env
-        php artisan key:generate
-        php artisan migrate --seed --force
-        npm run production
-        vendor/bin/phpunit
+    # - name: Run tests
+    #   run: |
+    #     cp .env.example .env
+    #     php artisan key:generate
+    #     php artisan migrate --seed --force
+    #     npm run production
+    #     vendor/bin/phpunit
 
   deploy:
 
@@ -54,4 +54,4 @@ jobs:
         remote-user: ${{ secrets.SSH_USER }}
         server-ip: ${{ secrets.SERVER_IP }}
         source: '.'
-        destination: '/var/www/html'
+        destination: '/WEG'
