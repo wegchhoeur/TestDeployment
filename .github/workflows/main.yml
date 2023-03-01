@@ -1,0 +1,57 @@
+name: Laravel and Vue.js CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '7.4'
+    - name: Install dependencies
+      run: |
+        sudo apt-get install mysql-client
+        composer install
+        npm install
+    - name: Run tests
+      run: |
+        cp .env.example .env
+        php artisan key:generate
+        php artisan migrate --seed --force
+        npm run production
+        vendor/bin/phpunit
+
+  deploy:
+
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '7.4'
+    - name: Install dependencies
+      run: |
+        sudo apt-get install mysql-client
+        composer install --no-dev --optimize-autoloader
+        npm install
+    - name: Deploy to server
+      uses: easingthemes/ssh-deploy@v2.2.7
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+        ssh-public-key: ${{ secrets.SSH_PUBLIC_KEY }}
+        remote-user: ${{ secrets.SSH_USER }}
+        server-ip: ${{ secrets.SERVER_IP }}
+        source: '.'
+        destination: '/var/www/html'
